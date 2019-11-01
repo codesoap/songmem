@@ -18,14 +18,15 @@ func CreateSchemaIfNotExists(db *sql.DB) (err error) {
 	commands := [...]string{
 		`CREATE TABLE IF NOT EXISTS song(
 		     id      INTEGER PRIMARY KEY AUTOINCREMENT,
-		     name    TEXT,
-		     addedAt TEXT
+		     name    TEXT NOT NULL,
+		     addedAt TEXT NOT NULL,
+		     CONSTRAINT name_unique UNIQUE(name)
 		 )`,
 		`CREATE INDEX IF NOT EXISTS song_name ON song(name)`,
 		`CREATE INDEX IF NOT EXISTS song_addedAt ON song(addedAt)`,
 		`CREATE TABLE IF NOT EXISTS hearing(
-		     songId  INTEGER,
-		     heardAt TEXT,
+		     songId  INTEGER NOT NULL,
+		     heardAt TEXT NOT NULL,
 		     FOREIGN KEY(songId) REFERENCES song(id)
 		 )`,
 		`CREATE INDEX IF NOT EXISTS hearing_songId ON hearing(songId)`,
