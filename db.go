@@ -59,3 +59,18 @@ func AddSong(db *sql.DB, song string) (err error) {
 	                  VALUES (?, ?)`, song, t)
 	return
 }
+
+// AddHearing registers that the given song was listened to at the
+// current timestamp.
+//
+// song must exactly match an already existing song from the database.
+//
+// The current timestamp will be stored with the local timezone, to
+// enable sorting hearings by time of day, even when traveling around
+// timezones.
+func AddHearing(db *sql.DB, song string) (err error) {
+	t := time.Now().Format(time.RFC3339)
+	_, err = db.Exec(`INSERT INTO hearing(songId, heardAt)
+	                  VALUES ((SELECT id FROM song WHERE name = ?), ?)`, song, t)
+	return
+}
