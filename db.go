@@ -7,14 +7,19 @@ import (
 	"time"
 )
 
-func InitDB(filepath string) (db *sql.DB, err error) {
-	if db, err = sql.Open("sqlite3", filepath); err == nil && db == nil {
-		err = errors.New("db is nil")
-	}
-	return
+type SongDB struct {
+	*sql.DB
 }
 
-func CreateSchemaIfNotExists(db *sql.DB) (err error) {
+func InitDB(filepath string) (SongDB, error) {
+	db, err := sql.Open("sqlite3", filepath)
+	if err == nil && db == nil {
+		err = errors.New("db is nil")
+	}
+	return SongDB{db}, err
+}
+
+func (db SongDB) CreateSchemaIfNotExists() (err error) {
 	commands := [...]string{
 		`CREATE TABLE IF NOT EXISTS song(
 		     id      INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -53,7 +58,7 @@ func CreateSchemaIfNotExists(db *sql.DB) (err error) {
 // The current timestamp will be stored with the local timezone, to
 // enable sorting songs by time of day, even when traveling around
 // timezones.
-func AddSong(db *sql.DB, song string) (err error) {
+func (db SongDB) AddSong(song string) (err error) {
 	t := time.Now().Format(time.RFC3339)
 	_, err = db.Exec(`INSERT INTO song(name, addedAt)
 	                  VALUES (?, ?)`, song, t)
@@ -68,7 +73,7 @@ func AddSong(db *sql.DB, song string) (err error) {
 // The current timestamp will be stored with the local timezone, to
 // enable sorting hearings by time of day, even when traveling around
 // timezones.
-func AddHearing(db *sql.DB, song string) (err error) {
+func (db SongDB) AddHearing(song string) (err error) {
 	t := time.Now().Format(time.RFC3339)
 	_, err = db.Exec(`INSERT INTO hearing(songId, heardAt)
 	                  VALUES (
@@ -79,8 +84,8 @@ func AddHearing(db *sql.DB, song string) (err error) {
 
 // AddHearingAndSongIfNeeded registers that the song was listened to
 // and, if necessary, adds the song to the database before that.
-func AddHearingAndSongIfNeeded(db *sql.DB, song string) error {
-	err := AddSong(db, song)
+func (db SongDB) AddHearingAndSongIfNeeded(song string) error {
+	err := db.AddSong(song)
 	if err != nil {
 		// The sqlite3.ErrConstraintUnique just indicates, that the song is already in
 		// the database.
@@ -89,5 +94,5 @@ func AddHearingAndSongIfNeeded(db *sql.DB, song string) error {
 			return err
 		}
 	}
-	return AddHearing(db, song)
+	return db.AddHearing(song)
 }
