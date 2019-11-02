@@ -1,6 +1,6 @@
 # Usage
 ```console
-# Add new songs:
+$ # Add new songs:
 $ songs --insert 'Le Wanski - Trauma (N'to - Trauma Remix)'
 $ songs --insert 'MALO - March of Progress'
 $ # List songs (newest additions to oldest):
