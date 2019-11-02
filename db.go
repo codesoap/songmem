@@ -98,7 +98,7 @@ func (db SongDB) AddHearingAndSongIfNeeded(song string) error {
 }
 
 // ListSongsInOrderOfAddition lists all songs in the order they were
-// added in. Newest additions will be listed first.
+// added. Newest additions will be listed first.
 func (db SongDB) ListSongsInOrderOfAddition() (songs []string, err error) {
 	rows, err := db.Query(`SELECT name FROM song ORDER BY id DESC`)
 	if err != nil {
