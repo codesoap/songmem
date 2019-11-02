@@ -5,6 +5,7 @@ import (
 	"github.com/codesoap/songs"
 	"github.com/docopt/docopt-go"
 	"os"
+	"path/filepath"
 )
 
 var usage = `
@@ -52,8 +53,7 @@ func main() {
 		os.Exit(2)
 	}
 
-	// TODO: Store database in $XDG_DATA_HOME .
-	db, err := songs.InitDB("test.sql")
+	db, err := songs.InitDB(getDbFilename())
 	defer db.Close()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, `Error when initializing database:`, err.Error())
@@ -108,4 +108,12 @@ func main() {
 			fmt.Println(s)
 		}
 	}
+}
+
+func getDbFilename() string {
+	dataDir := os.Getenv("XDG_DATA_HOME")
+	if dataDir == "" {
+		dataDir = filepath.Join(os.Getenv("HOME"), ".local/share/")
+	}
+	return filepath.Join(dataDir, "songs.sql")
 }
