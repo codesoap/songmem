@@ -56,12 +56,14 @@ func main() {
 	db, err := songs.InitDB(getDbFilename())
 	defer db.Close()
 	if err != nil {
-		fmt.Fprintln(os.Stderr, `Error when initializing database:`, err.Error())
+		fmt.Fprintln(os.Stderr, `Error when initializing database:`,
+			err.Error())
 		os.Exit(3)
 	}
 	err = db.CreateSchemaIfNotExists()
 	if err != nil {
-		fmt.Fprintln(os.Stderr, `Error when creating database schema:`, err.Error())
+		fmt.Fprintln(os.Stderr, `Error when creating database schema:`,
+			err.Error())
 		os.Exit(4)
 	}
 
@@ -75,7 +77,8 @@ func main() {
 	case conf.Register:
 		err = db.AddHearingAndSongIfNeeded(conf.Name)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, `Error when adding song or hearing:`, err.Error())
+			fmt.Fprintln(os.Stderr, `Error when adding song or hearing:`,
+				err.Error())
 			os.Exit(6)
 		}
 	case conf.AddedAt:
