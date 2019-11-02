@@ -113,3 +113,22 @@ func (db SongDB) ListSongsInOrderOfAddition() (songs []string, err error) {
 	}
 	return
 }
+
+// ListSongsInOrderOfLastHearing lists all songs in the order they were
+// last heard. The songs that were heard last will be listed first.
+func (db SongDB) ListSongsInOrderOfLastHearing() (songs []string, err error) {
+	rows, err := db.Query(`SELECT DISTINCT name FROM hearing
+	                       INNER JOIN song ON song.id = hearing.songId
+	                       ORDER BY heardAt DESC`)
+	if err != nil {
+		return
+	}
+	for rows.Next() {
+		var song string
+		if err = rows.Scan(&song); err != nil {
+			return
+		}
+		songs = append(songs, song)
+	}
+	return
+}
