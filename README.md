@@ -1,3 +1,5 @@
+[![GoDoc](https://godoc.org/github.com/codesoap/songs?status.svg)](https://godoc.org/github.com/codesoap/songs)
+
 # Usage
 ```console
 $ # Add new songs:
