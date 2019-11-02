@@ -100,6 +100,14 @@ func main() {
 			fmt.Println(s)
 		}
 	case conf.Frecent:
+		songs, err := db.ListFrecentSongs()
+		if err != nil {
+			fmt.Fprintln(os.Stderr, `Error when listing songs:`, err.Error())
+			os.Exit(9)
+		}
+		for _, s := range songs {
+			fmt.Println(s)
+		}
 	case conf.Suggestions:
 	default:
 		songs, err := db.ListSongsInOrderOfLastHearing()

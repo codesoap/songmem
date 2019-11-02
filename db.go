@@ -143,3 +143,29 @@ func extractSongs(nameRows *sql.Rows) (songs []string, err error) {
 	}
 	return
 }
+
+// ListFrecentSongs list songs you lately heard a lot, most frecent first.
+func (db SongDB) ListFrecentSongs() (songs []string, err error) {
+	// FIXME: If performance becomes an issue: limit results to last year,
+	//        or so.
+	rows, err := db.Query(`SELECT name, heardAt FROM hearing
+	                       INNER JOIN song ON song.id = hearing.songId`)
+	if err != nil {
+		return
+	}
+
+	var fis []frecencyInput
+	for rows.Next() {
+		var name string
+		var dateStr string
+		var date time.Time
+		if err = rows.Scan(&name, &dateStr); err != nil {
+			return
+		}
+		if date, err = time.Parse(time.RFC3339, dateStr); err != nil {
+			return
+		}
+		fis = append(fis, frecencyInput{name, date})
+	}
+	return frecencyInputsToSongs(fis), nil
+}
