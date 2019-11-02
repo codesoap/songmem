@@ -104,14 +104,7 @@ func (db SongDB) ListSongsInOrderOfAddition() (songs []string, err error) {
 	if err != nil {
 		return
 	}
-	for rows.Next() {
-		var song string
-		if err = rows.Scan(&song); err != nil {
-			return
-		}
-		songs = append(songs, song)
-	}
-	return
+	return extractSongs(rows)
 }
 
 // ListSongsInOrderOfLastHearing lists all songs in the order they were
@@ -123,14 +116,7 @@ func (db SongDB) ListSongsInOrderOfLastHearing() (songs []string, err error) {
 	if err != nil {
 		return
 	}
-	for rows.Next() {
-		var song string
-		if err = rows.Scan(&song); err != nil {
-			return
-		}
-		songs = append(songs, song)
-	}
-	return
+	return extractSongs(rows)
 }
 
 // ListFavouriteSongs lists all songs, listing those first, that you
@@ -143,9 +129,13 @@ func (db SongDB) ListFavouriteSongs() (songs []string, err error) {
 	if err != nil {
 		return
 	}
-	for rows.Next() {
+	return extractSongs(rows)
+}
+
+func extractSongs(nameRows *sql.Rows) (songs []string, err error) {
+	for nameRows.Next() {
 		var song string
-		if err = rows.Scan(&song); err != nil {
+		if err = nameRows.Scan(&song); err != nil {
 			return
 		}
 		songs = append(songs, song)
