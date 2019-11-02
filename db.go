@@ -20,7 +20,7 @@ func CreateSchemaIfNotExists(db *sql.DB) (err error) {
 		     id      INTEGER PRIMARY KEY AUTOINCREMENT,
 		     name    TEXT NOT NULL,
 		     addedAt TEXT NOT NULL,
-		     CONSTRAINT name_unique UNIQUE(name)
+		     CONSTRAINT name_unique UNIQUE(name COLLATE NOCASE)
 		 )`,
 		`CREATE INDEX IF NOT EXISTS song_name ON song(name)`,
 		`CREATE INDEX IF NOT EXISTS song_addedAt ON song(addedAt)`,
@@ -71,6 +71,8 @@ func AddSong(db *sql.DB, song string) (err error) {
 func AddHearing(db *sql.DB, song string) (err error) {
 	t := time.Now().Format(time.RFC3339)
 	_, err = db.Exec(`INSERT INTO hearing(songId, heardAt)
-	                  VALUES ((SELECT id FROM song WHERE name = ?), ?)`, song, t)
+	                  VALUES (
+	                      (SELECT id FROM song WHERE name = ? COLLATE NOCASE), ?
+	                  )`, song, t)
 	return
 }
