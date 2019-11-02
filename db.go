@@ -3,7 +3,7 @@ package songs
 import (
 	"database/sql"
 	"errors"
-	_ "github.com/mattn/go-sqlite3"
+	sqlite3 "github.com/mattn/go-sqlite3"
 	"time"
 )
 
@@ -75,4 +75,19 @@ func AddHearing(db *sql.DB, song string) (err error) {
 	                      (SELECT id FROM song WHERE name = ? COLLATE NOCASE), ?
 	                  )`, song, t)
 	return
+}
+
+// AddHearingAndSongIfNeeded registers that the song was listened to
+// and, if necessary, adds the song to the database before that.
+func AddHearingAndSongIfNeeded(db *sql.DB, song string) error {
+	err := AddSong(db, song)
+	if err != nil {
+		// The sqlite3.ErrConstraintUnique just indicates, that the song is already in
+		// the database.
+		sqliteErr, ok := err.(sqlite3.Error)
+		if !ok || sqliteErr.ExtendedCode != sqlite3.ErrConstraintUnique {
+			return err
+		}
+	}
+	return AddHearing(db, song)
 }
