@@ -132,3 +132,23 @@ func (db SongDB) ListSongsInOrderOfLastHearing() (songs []string, err error) {
 	}
 	return
 }
+
+// ListFavouriteSongs lists all songs, listing those first, that you
+// heard most often.
+func (db SongDB) ListFavouriteSongs() (songs []string, err error) {
+	rows, err := db.Query(`SELECT name FROM hearing
+	                       INNER JOIN song ON song.id = hearing.songId
+	                       GROUP BY hearing.songId
+	                       ORDER BY COUNT(*) DESC`)
+	if err != nil {
+		return
+	}
+	for rows.Next() {
+		var song string
+		if err = rows.Scan(&song); err != nil {
+			return
+		}
+		songs = append(songs, song)
+	}
+	return
+}

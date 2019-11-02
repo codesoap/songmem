@@ -88,6 +88,14 @@ func main() {
 			fmt.Println(s)
 		}
 	case conf.Favourite:
+		songs, err := db.ListFavouriteSongs()
+		if err != nil {
+			fmt.Fprintln(os.Stderr, `Error when listing songs:`, err.Error())
+			os.Exit(8)
+		}
+		for _, s := range songs {
+			fmt.Println(s)
+		}
 	case conf.Frecent:
 	case conf.Suggestions:
 	default:
