@@ -6,25 +6,20 @@ import (
 	"time"
 )
 
-type frecencyInput struct {
-	Name string
-	Date time.Time
-}
-
 type kv struct {
 	Key string
 	Val float64
 }
 
 // See https://wiki.mozilla.org/User:Jesse/NewFrecency
-func frecencyInputsToSongs(fis []frecencyInput) []string {
+func songHearingsToFrecentSongs(shs []songHearing) []string {
 	now := time.Now()
 	const lambda float64 = 0.00096270442 // (ln 2) / (30 days * 24h)
 
 	songIDToFrecency := make(map[string]float64)
-	for _, fi := range fis {
-		hearingAge := now.Sub(fi.Date).Hours()
-		songIDToFrecency[fi.Name] += math.Exp(-lambda * hearingAge)
+	for _, sh := range shs {
+		hearingAge := now.Sub(sh.Date).Hours()
+		songIDToFrecency[sh.Name] += math.Exp(-lambda * hearingAge)
 	}
 
 	// Make songIDToFrecencyKv a slice of songs sorted by frecency:

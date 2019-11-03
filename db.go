@@ -11,6 +11,11 @@ type SongDB struct {
 	*sql.DB
 }
 
+type songHearing struct {
+	Name string
+	Date time.Time
+}
+
 func InitDB(filepath string) (SongDB, error) {
 	db, err := sql.Open("sqlite3", filepath)
 	if err == nil && db == nil {
@@ -144,7 +149,7 @@ func extractSongs(nameRows *sql.Rows) (songs []string, err error) {
 	return
 }
 
-// ListFrecentSongs list songs you lately heard a lot, most frecent first.
+// ListFrecentSongs lists songs you lately heard a lot, most frecent first.
 func (db SongDB) ListFrecentSongs() (songs []string, err error) {
 	// FIXME: If performance becomes an issue: limit results to last year,
 	//        or so.
@@ -153,8 +158,14 @@ func (db SongDB) ListFrecentSongs() (songs []string, err error) {
 	if err != nil {
 		return
 	}
+	shs, err := rowsToSongHearings(rows)
+	if err != nil {
+		return
+	}
+	return songHearingsToFrecentSongs(shs), nil
+}
 
-	var fis []frecencyInput
+func rowsToSongHearings(rows *sql.Rows) (shs []songHearing, err error) {
 	for rows.Next() {
 		var name string
 		var dateStr string
@@ -165,7 +176,7 @@ func (db SongDB) ListFrecentSongs() (songs []string, err error) {
 		if date, err = time.Parse(time.RFC3339, dateStr); err != nil {
 			return
 		}
-		fis = append(fis, frecencyInput{name, date})
+		shs = append(shs, songHearing{name, date})
 	}
-	return frecencyInputsToSongs(fis), nil
+	return
 }
