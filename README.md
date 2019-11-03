@@ -66,3 +66,16 @@ Adapt these scripts to add songs to the queue, browse through song
 suggestions for the currently playing song, ...
 
 Setting up keyboard shortcuts for your scripts could also prove useful.
+
+## [ytools](https://github.com/codesoap/ytools)
+```bash
+#!/usr/bin/env sh
+
+# Abort when dmenu is quit using <esc> or the song cannot be played:
+set -e
+
+song="$(songs | dmenu -i -l 15 -p "Play song:")"
+ytools-search "$song"
+mpv --ytdl-format "bestaudio/best" --no-video "$(ytools-pick 1)"
+songs --register "$song"
+```
