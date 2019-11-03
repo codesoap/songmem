@@ -24,10 +24,6 @@ func frecencyInputsToSongs(fis []frecencyInput) []string {
 	songIdToFrecency := make(map[string]float64)
 	for _, fi := range fis {
 		var hearingAge float64 = now.Sub(fi.Date).Hours()
-		if hearingAge <= 0 {
-			// This could happen when there is clock skew.
-			continue
-		}
 		songIdToFrecency[fi.Name] += math.Exp(-lambda * hearingAge)
 	}
 
