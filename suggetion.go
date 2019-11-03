@@ -17,7 +17,7 @@ import (
 // FIXME: Someone with a background in maths could probably come up with
 //        a better algorithm.
 func songHearingsToSuggestions(shs []songHearing, song string) ([]string, error) {
-	gshts := make([]time.Time, 0) // given song hearing times
+	var gshts []time.Time // given song hearing times
 	for _, sh := range shs {
 		if sh.Name == song {
 			gshts = append(gshts, sh.Date)
@@ -32,7 +32,7 @@ func songHearingsToSuggestions(shs []songHearing, song string) ([]string, error)
 		if sh.Name == song {
 			continue
 		}
-		var minTimespan float64 = math.MaxFloat64
+		var minTimespan = math.MaxFloat64
 		for _, gsht := range gshts {
 			timespan := math.Abs(gsht.Sub(sh.Date).Minutes())
 			minTimespan = math.Min(timespan, minTimespan)
