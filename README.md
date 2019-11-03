@@ -22,3 +22,47 @@ Options:
     -s --suggestions  List songs, that you often hear before or after hearing
                       the given song. Best suggestions first.
 ```
+
+# Music player integration
+The following scripts assume that you store your songs like
+`<artist> - <title>`.
+
+## mpd (requires mpc)
+This script registers when a song is played through mpd. Start it after
+launching `mpd(1)`.
+
+```bash
+#!/usr/bin/env sh
+
+while true
+do
+	song="$(mpc -f '%artist% - %title%' current --wait)"
+	songs --register "$song"
+done
+```
+
+You can search for recently heard songs and play them in mpd (requires
+dmenu; alternatively you could use fzf):
+
+```bash
+#!/usr/bin/env sh
+
+# Abort when dmenu is quit using <esc>:
+set -e
+
+song="$(songs | dmenu -i -l 15 -p "Play song:")"
+artist="$(printf "$song" | awk -F ' - ' '{print $1}')"
+title="$(printf "$song" | awk '{i = index($0, " - "); print substr($0, i + 3)}')"
+songfile="$(mpc search artist "$artist" title "$title")"
+if [ -n "$songfile" ]
+then
+	mpc clear
+	mpc add "$songfile"
+	mpc play
+fi
+```
+
+Adapt these scripts to add songs to the queue, browse through song
+suggestions for the currently playing song, ...
+
+Setting up keyboard shortcuts for your scripts could also prove useful.
