@@ -1,5 +1,15 @@
 [![GoDoc](https://godoc.org/github.com/codesoap/songmem?status.svg)](https://godoc.org/github.com/codesoap/songmem)
 
+# Installation
+Installation has been tested on OpenBSD and Ubuntu, but will probably
+run on any POSIX-compliant operating system, that is supported by
+golang.
+
+To install songmem run `go get -v -u 'github.com/codesoap/songmem/...'`
+(this will take some time, because the dependency go-sqlite3 is
+big). The songmem binary will be placed at `$HOME/go/bin/songmem`. Add
+`$HOME/go/bin/` to your `$PATH` for easy usage.
+
 # Usage
 ```
 Usage:
