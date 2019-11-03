@@ -3,7 +3,6 @@ package songs
 import (
 	"errors"
 	"math"
-	"sort"
 	"time"
 )
 
@@ -44,18 +43,5 @@ func songHearingsToSuggestions(shs []songHearing, song string) ([]string, error)
 		correlations[sh.Name] += 1 / minTimespan
 	}
 
-	// Make correlationsKv a slice of songs sorted by frecency:
-	correlationsKv := make([]kv, 0, len(correlations))
-	for key, val := range correlations {
-		correlationsKv = append(correlationsKv, kv{key, val})
-	}
-	sort.Slice(correlationsKv, func(i, j int) bool {
-		return correlationsKv[i].Val > correlationsKv[j].Val
-	})
-
-	songs := make([]string, 0, len(correlationsKv))
-	for _, kv := range correlationsKv {
-		songs = append(songs, kv.Key)
-	}
-	return songs, nil
+	return songRatingsToSongs(correlations), nil
 }
