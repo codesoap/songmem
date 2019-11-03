@@ -61,6 +61,9 @@ func (db SongDB) CreateSchemaIfNotExists() (err error) {
 // enable sorting songs by time of day, even when traveling around
 // timezones.
 func (db SongDB) AddSong(song string) (err error) {
+	if len(song) == 0 {
+		return errors.New("the given song is empty")
+	}
 	t := time.Now().Format(time.RFC3339)
 	_, err = db.Exec(`INSERT INTO song(name, addedAt)
 	                  VALUES (?, ?)`, song, t)
@@ -76,6 +79,9 @@ func (db SongDB) AddSong(song string) (err error) {
 // enable sorting hearings by time of day, even when traveling around
 // timezones.
 func (db SongDB) AddHearing(song string) (err error) {
+	if len(song) == 0 {
+		return errors.New("the given song is empty")
+	}
 	t := time.Now().Format(time.RFC3339)
 	_, err = db.Exec(`INSERT INTO hearing(songID, heardAt)
 	                  VALUES (
@@ -87,6 +93,9 @@ func (db SongDB) AddHearing(song string) (err error) {
 // AddHearingAndSongIfNeeded registers that the song was listened to
 // and, if necessary, adds the song to the database before that.
 func (db SongDB) AddHearingAndSongIfNeeded(song string) error {
+	if len(song) == 0 {
+		return errors.New("the given song is empty")
+	}
 	err := db.AddSong(song)
 	if err != nil {
 		// The sqlite3.ErrConstraintUnique just indicates, that the song
