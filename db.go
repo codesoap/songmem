@@ -33,14 +33,11 @@ func (db SongDB) CreateSchemaIfNotExists() (err error) {
 		     CONSTRAINT name_unique UNIQUE(name COLLATE NOCASE)
 		 )`,
 		`CREATE INDEX IF NOT EXISTS song_name ON song(name)`,
-		`CREATE INDEX IF NOT EXISTS song_addedAt ON song(addedAt)`,
 		`CREATE TABLE IF NOT EXISTS hearing(
 		     songID  INTEGER NOT NULL,
 		     heardAt TEXT NOT NULL,
 		     FOREIGN KEY(songID) REFERENCES song(id)
-		 )`,
-		`CREATE INDEX IF NOT EXISTS hearing_songID ON hearing(songID)`,
-		`CREATE INDEX IF NOT EXISTS hearing_heardAt ON hearing(heardAt)`}
+		 )`}
 
 	tx, err := db.Begin()
 	defer tx.Rollback()
