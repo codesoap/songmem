@@ -30,11 +30,11 @@ func (db SongDB) CreateSchemaIfNotExists() (err error) {
 		`CREATE INDEX IF NOT EXISTS song_name ON song(name)`,
 		`CREATE INDEX IF NOT EXISTS song_addedAt ON song(addedAt)`,
 		`CREATE TABLE IF NOT EXISTS hearing(
-		     songId  INTEGER NOT NULL,
+		     songID  INTEGER NOT NULL,
 		     heardAt TEXT NOT NULL,
-		     FOREIGN KEY(songId) REFERENCES song(id)
+		     FOREIGN KEY(songID) REFERENCES song(id)
 		 )`,
-		`CREATE INDEX IF NOT EXISTS hearing_songId ON hearing(songId)`,
+		`CREATE INDEX IF NOT EXISTS hearing_songID ON hearing(songID)`,
 		`CREATE INDEX IF NOT EXISTS hearing_heardAt ON hearing(heardAt)`}
 
 	tx, err := db.Begin()
@@ -75,7 +75,7 @@ func (db SongDB) AddSong(song string) (err error) {
 // timezones.
 func (db SongDB) AddHearing(song string) (err error) {
 	t := time.Now().Format(time.RFC3339)
-	_, err = db.Exec(`INSERT INTO hearing(songId, heardAt)
+	_, err = db.Exec(`INSERT INTO hearing(songID, heardAt)
 	                  VALUES (
 	                      (SELECT id FROM song WHERE name = ? COLLATE NOCASE), ?
 	                  )`, song, t)
@@ -112,7 +112,7 @@ func (db SongDB) ListSongsInOrderOfAddition() (songs []string, err error) {
 // last heard. The songs that were heard last will be listed first.
 func (db SongDB) ListSongsInOrderOfLastHearing() (songs []string, err error) {
 	rows, err := db.Query(`SELECT DISTINCT name FROM hearing
-	                       INNER JOIN song ON song.id = hearing.songId
+	                       INNER JOIN song ON song.id = hearing.songID
 	                       ORDER BY heardAt DESC`)
 	if err != nil {
 		return
@@ -124,8 +124,8 @@ func (db SongDB) ListSongsInOrderOfLastHearing() (songs []string, err error) {
 // heard most often.
 func (db SongDB) ListFavouriteSongs() (songs []string, err error) {
 	rows, err := db.Query(`SELECT name FROM hearing
-	                       INNER JOIN song ON song.id = hearing.songId
-	                       GROUP BY hearing.songId
+	                       INNER JOIN song ON song.id = hearing.songID
+	                       GROUP BY hearing.songID
 	                       ORDER BY COUNT(*) DESC`)
 	if err != nil {
 		return
@@ -149,7 +149,7 @@ func (db SongDB) ListFrecentSongs() (songs []string, err error) {
 	// FIXME: If performance becomes an issue: limit results to last year,
 	//        or so.
 	rows, err := db.Query(`SELECT name, heardAt FROM hearing
-	                       INNER JOIN song ON song.id = hearing.songId`)
+	                       INNER JOIN song ON song.id = hearing.songID`)
 	if err != nil {
 		return
 	}
