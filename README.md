@@ -61,8 +61,8 @@ dmenu; alternatively you could use fzf):
 set -e
 
 song="$(songmem | dmenu -i -l 15 -p "Play song:")"
-artist="$(printf "$song" | awk -F ' - ' '{print $1}')"
-title="$(printf "$song" | awk '{i = index($0, " - "); print substr($0, i + 3)}')"
+artist="$(printf '%s' "$song" | awk -F ' - ' '{print $1}')"
+title="$(printf '%s' "$song" | awk '{i=index($0, " - "); print substr($0, i+3)}')"
 songfile="$(mpc search artist "$artist" title "$title")"
 if [ -n "$songfile" ]
 then
