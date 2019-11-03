@@ -53,7 +53,7 @@ func main() {
 		os.Exit(2)
 	}
 
-	db, err := songs.InitDB(getDbFilename())
+	db, err := songs.InitDB(getDBFilename())
 	defer db.Close()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, `Error when initializing database:`,
@@ -129,7 +129,7 @@ func main() {
 	}
 }
 
-func getDbFilename() string {
+func getDBFilename() string {
 	dataDir := os.Getenv("XDG_DATA_HOME")
 	if dataDir == "" {
 		dataDir = filepath.Join(os.Getenv("HOME"), ".local/share/")
