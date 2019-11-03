@@ -165,6 +165,21 @@ func (db SongDB) ListFrecentSongs() (songs []string, err error) {
 	return songHearingsToFrecentSongs(shs), nil
 }
 
+// ListSuggestions lists songs that you aften hear before or after
+// hearing the given song. Best suggestions first.
+func (db SongDB) ListSuggestions(song string) (songs []string, err error) {
+	rows, err := db.Query(`SELECT name, heardAt FROM hearing
+	                       INNER JOIN song ON song.id = hearing.songID`)
+	if err != nil {
+		return
+	}
+	shs, err := rowsToSongHearings(rows)
+	if err != nil {
+		return
+	}
+	return songHearingsToSuggestions(shs, song)
+}
+
 func rowsToSongHearings(rows *sql.Rows) (shs []songHearing, err error) {
 	for rows.Next() {
 		var name string
