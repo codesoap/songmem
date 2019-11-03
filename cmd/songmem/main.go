@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/codesoap/songs"
+	"github.com/codesoap/songmem"
 	"github.com/docopt/docopt-go"
 	"os"
 	"path/filepath"
@@ -10,12 +10,12 @@ import (
 
 var usage = `
 Usage:
-    songs --register [--no-add] <name>
-    songs
-    songs --added-at
-    songs --favourite
-    songs --frecent
-    songs --suggestions <name>
+    songmem --register [--no-add] <name>
+    songmem
+    songmem --added-at
+    songmem --favourite
+    songmem --frecent
+    songmem --suggestions <name>
 Options:
     -h --help         Show this screen.
     -r --register     Register that you just heard a song. If the song does not
@@ -53,7 +53,7 @@ func main() {
 		os.Exit(2)
 	}
 
-	db, err := songs.InitDB(getDBFilename())
+	db, err := songmem.InitDB(getDBFilename())
 	defer db.Close()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, `Error when initializing database:`,
@@ -134,5 +134,5 @@ func getDBFilename() string {
 	if dataDir == "" {
 		dataDir = filepath.Join(os.Getenv("HOME"), ".local/share/")
 	}
-	return filepath.Join(dataDir, "songs.sql")
+	return filepath.Join(dataDir, "songmem.sql")
 }

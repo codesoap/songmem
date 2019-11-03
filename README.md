@@ -1,14 +1,14 @@
-[![GoDoc](https://godoc.org/github.com/codesoap/songs?status.svg)](https://godoc.org/github.com/codesoap/songs)
+[![GoDoc](https://godoc.org/github.com/codesoap/songmem?status.svg)](https://godoc.org/github.com/codesoap/songmem)
 
 # Usage
 ```
 Usage:
-    songs --register [--no-add] <name>
-    songs
-    songs --added-at
-    songs --favourite
-    songs --frecent
-    songs --suggestions <name>
+    songmem --register [--no-add] <name>
+    songmem
+    songmem --added-at
+    songmem --favourite
+    songmem --frecent
+    songmem --suggestions <name>
 Options:
     -h --help         Show this screen.
     -r --register     Register that you just heard a song. If the song does not
@@ -37,7 +37,7 @@ launching `mpd(1)`.
 while true
 do
 	song="$(mpc -f '%artist% - %title%' current --wait)"
-	songs --register "$song"
+	songmem --register "$song"
 done
 ```
 
@@ -50,7 +50,7 @@ dmenu; alternatively you could use fzf):
 # Abort when dmenu is quit using <esc>:
 set -e
 
-song="$(songs | dmenu -i -l 15 -p "Play song:")"
+song="$(songmem | dmenu -i -l 15 -p "Play song:")"
 artist="$(printf "$song" | awk -F ' - ' '{print $1}')"
 title="$(printf "$song" | awk '{i = index($0, " - "); print substr($0, i + 3)}')"
 songfile="$(mpc search artist "$artist" title "$title")"
@@ -74,8 +74,8 @@ Setting up keyboard shortcuts for your scripts could also prove useful.
 # Abort when dmenu is quit using <esc> or the song cannot be played:
 set -e
 
-song="$(songs | dmenu -i -l 15 -p "Play song:")"
+song="$(songmem | dmenu -i -l 15 -p "Play song:")"
 ytools-search "$song"
 mpv --ytdl-format "bestaudio/best" --no-video "$(ytools-pick 1)"
-songs --register "$song"
+songmem --register "$song"
 ```

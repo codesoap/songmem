@@ -1,4 +1,4 @@
-package songs
+package songmem
 
 import (
 	"sort"
