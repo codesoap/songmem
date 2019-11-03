@@ -27,6 +27,7 @@ func frecencyInputsToSongs(fis []frecencyInput) []string {
 		songIdToFrecency[fi.Name] += math.Exp(-lambda * hearingAge)
 	}
 
+	// Make songIdToFrecencyKv a slice of songs sorted by frecency:
 	songIdToFrecencyKv := make([]kv, 0, len(songIdToFrecency))
 	for key, val := range songIdToFrecency {
 		songIdToFrecencyKv = append(songIdToFrecencyKv, kv{key, val})
