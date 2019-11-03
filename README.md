@@ -89,3 +89,5 @@ ytools-search "$song"
 mpv --ytdl-format "bestaudio/best" --no-video "$(ytools-pick 1)"
 songmem --register "$song"
 ```
+
+You could add this as a fallback into the previous script for mpd.
