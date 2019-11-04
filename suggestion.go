@@ -11,11 +11,8 @@ import (
 // song.
 //
 // The algorithm for determining the correlation calculates the sum of
-// 1 / (timespan between a songHearing and the closest hearing of the
-// given song).
-//
-// FIXME: Someone with a background in maths could probably come up with
-//        a better algorithm.
+// e ^ (-λ_1h * abs(time_of_hearing - closest_hearing_of_given_song))
+// for every song.
 func songHearingsToSuggestions(shs []songHearing, song string) ([]string, error) {
 	var gshts []time.Time // given song hearing times
 	for _, sh := range shs {
@@ -27,6 +24,7 @@ func songHearingsToSuggestions(shs []songHearing, song string) ([]string, error)
 		return nil, errors.New("the given song was never heard")
 	}
 
+	const lambda float64 = 0.01155245301 // ln(2) / 60min
 	correlations := make(map[string]float64)
 	for _, sh := range shs {
 		if sh.Name == song {
@@ -37,10 +35,7 @@ func songHearingsToSuggestions(shs []songHearing, song string) ([]string, error)
 			timespan := math.Abs(gsht.Sub(sh.Date).Minutes())
 			minTimespan = math.Min(timespan, minTimespan)
 		}
-		// Timespans smaller than 1 minute are likely an error and would
-		// mess up the correlation:
-		minTimespan = math.Max(minTimespan, 1)
-		correlations[sh.Name] += 1 / minTimespan
+		correlations[sh.Name] += math.Exp(-lambda * minTimespan)
 	}
 
 	return songRatingsToSongs(correlations), nil
