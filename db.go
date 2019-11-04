@@ -100,7 +100,6 @@ func (db SongDB) AddHearingAndSongIfNeeded(song string) error {
 	if err != nil {
 		// The sqlite3.ErrConstraintUnique just indicates, that the song
 		// is already in the database.
-
 		sqliteErr, ok := err.(sqlite3.Error)
 		if !ok || sqliteErr.ExtendedCode != sqlite3.ErrConstraintUnique {
 			return err
