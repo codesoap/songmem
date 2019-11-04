@@ -22,7 +22,7 @@ Usage:
 Options:
     -h --help         Show this screen.
     -r --register     Register that you just heard a song. If the song does not
-                      exist yet, it will be added.
+                      exist yet, it will be added to the database.
     -n --no-add       Do not add a song to the database, when registering that
                       you just heard it. If the song does not exist, nothing
                       will happen.
