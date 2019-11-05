@@ -19,6 +19,7 @@ Usage:
     songmem --favourite
     songmem --frecent
     songmem --suggestions <name>
+    songmem --remove-song [<name>]
 Options:
     -h --help         Show this screen.
     -r --register     Register that you just heard a song. If the song does not
@@ -31,6 +32,9 @@ Options:
     -c --frecent      List songs you recently heard a lot. Most frecent first.
     -s --suggestions  List songs, that you often hear before or after hearing
                       the given song. Best suggestions first.
+    --remove-song     Remove the last added song from the database. If <name> is
+                      given, remove this song. Fails if there are still hearings
+                      of the song.
 
 If songmem is called without any arguments, it will list all songs, last heard
 first.

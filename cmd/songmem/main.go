@@ -16,6 +16,7 @@ Usage:
     songmem --favourite
     songmem --frecent
     songmem --suggestions <name>
+    songmem --remove-song [<name>]
 Options:
     -h --help         Show this screen.
     -r --register     Register that you just heard a song. If the song does not
@@ -28,6 +29,9 @@ Options:
     -c --frecent      List songs you recently heard a lot. Most frecent first.
     -s --suggestions  List songs, that you often hear before or after hearing
                       the given song. Best suggestions first.
+    --remove-song     Remove the last added song from the database. If <name> is
+                      given, remove this song. Fails if there are still hearings
+                      of the song.
 
 If songmem is called without any arguments, it will list all songs, last heard
 first.
@@ -41,6 +45,7 @@ type conf struct {
 	Favourite   bool
 	Frecent     bool
 	Suggestions bool
+	RemoveSong  bool
 }
 
 func main() {
@@ -120,11 +125,23 @@ func main() {
 		for _, s := range songs {
 			fmt.Println(s)
 		}
+	case conf.RemoveSong:
+		song := conf.Name
+		if len(conf.Name) > 0 {
+			err = db.RemoveSong(conf.Name)
+		} else {
+			song, err = db.RemoveLastAddedSong()
+		}
+		if err != nil {
+			fmt.Fprintln(os.Stderr, `Error when removing song:`, err.Error())
+			os.Exit(11)
+		}
+		fmt.Fprintln(os.Stderr, "Removed song:", song)
 	default:
 		songs, err := db.ListSongsInOrderOfLastHearing()
 		if err != nil {
 			fmt.Fprintln(os.Stderr, `Error when listing songs:`, err.Error())
-			os.Exit(11)
+			os.Exit(12)
 		}
 		for _, s := range songs {
 			fmt.Println(s)

@@ -19,9 +19,10 @@ type songHearing struct {
 func InitDB(filepath string) (SongDB, error) {
 	db, err := sql.Open("sqlite3", filepath)
 	if err == nil && db == nil {
-		return nil, errors.New("db is nil")
+		err = errors.New("db is nil")
+	} else {
+		_, err = db.Exec(`PRAGMA foreign_keys = ON`)
 	}
-	_, err = db.Exec(`PRAGMA foreign_keys = ON`)
 	return SongDB{db}, err
 }
 
@@ -203,6 +204,59 @@ func rowsToSongHearings(rows *sql.Rows) (shs []songHearing, err error) {
 			return
 		}
 		shs = append(shs, songHearing{name, date})
+	}
+	return
+}
+
+// RemoveSong removes the song with the given name from the database.
+// Fails if there is still an entry in the hearing table, that
+// references the song.
+func (db SongDB) RemoveSong(song string) (err error) {
+	r, err := db.Exec(`DELETE FROM song WHERE name = ?`, song)
+	if err != nil {
+		return
+	}
+	n, err := r.RowsAffected()
+	if err != nil {
+		return
+	}
+	if n != 1 {
+		err = errors.New("song not found")
+	}
+	return
+}
+
+// RemoveLastAddedSong removes the last added song from the database.
+// Fails if there is still an entry in the hearing table, that
+// references the song.
+//
+// Returns the removed song's name.
+func (db SongDB) RemoveLastAddedSong() (song string, err error) {
+	rows, err := db.Query(`SELECT id, name FROM song ORDER BY id DESC LIMIT 1`)
+	if err != nil {
+		return
+	}
+	if rows.Next() == false {
+		return "", errors.New("no song found")
+	}
+	var id int64
+	if err = rows.Scan(&id, &song); err != nil {
+		return
+	}
+	if err = rows.Close(); err != nil {
+		return
+	}
+
+	r, err := db.Exec(`DELETE FROM song WHERE id = ?`, id)
+	if err != nil {
+		return
+	}
+	n, err := r.RowsAffected()
+	if err != nil {
+		return
+	}
+	if n != 1 {
+		err = errors.New("song got lost in transit")
 	}
 	return
 }
