@@ -31,6 +31,9 @@ Options:
     -c --frecent      List songs you recently heard a lot. Most frecent first.
     -s --suggestions  List songs, that you often hear before or after hearing
                       the given song. Best suggestions first.
+
+If songmem is called without any arguments, it will list all songs, last heard
+first.
 ```
 
 # Music player integration
