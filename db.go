@@ -27,6 +27,8 @@ func InitDB(filepath string) (SongDB, error) {
 }
 
 func (db SongDB) CreateSchemaIfNotExists() (err error) {
+	// id is explicitly used instead of rowid, so that AUTOINCREMENT can be set.
+	// This ensures, that one can, for example, delete the last added hearing.
 	commands := [...]string{
 		`CREATE TABLE IF NOT EXISTS song(
 		     id      INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -36,6 +38,7 @@ func (db SongDB) CreateSchemaIfNotExists() (err error) {
 		 )`,
 		`CREATE INDEX IF NOT EXISTS song_name ON song(name)`,
 		`CREATE TABLE IF NOT EXISTS hearing(
+		     id      INTEGER PRIMARY KEY AUTOINCREMENT,
 		     songID  INTEGER NOT NULL,
 		     heardAt TEXT NOT NULL,
 		     FOREIGN KEY(songID) REFERENCES song(id)
@@ -204,6 +207,64 @@ func rowsToSongHearings(rows *sql.Rows) (shs []songHearing, err error) {
 			return
 		}
 		shs = append(shs, songHearing{name, date})
+	}
+	return
+}
+
+// RemoveLastHearing removes the latest hearing. Fails if there is no
+// hearing in the database.
+func (db SongDB) RemoveLastHearing() (song string, err error) {
+	rows, err := db.Query(`SELECT hearing.id, name FROM hearing
+	                       INNER JOIN song ON hearing.songID = song.id
+	                       ORDER BY hearing.id DESC
+	                       LIMIT 1`)
+	if err != nil {
+		return
+	}
+	if rows.Next() == false {
+		return "", errors.New("no hearing found")
+	}
+	var id int64
+	if err = rows.Scan(&id, &song); err != nil {
+		return
+	}
+	if err = rows.Close(); err != nil {
+		return
+	}
+
+	r, err := db.Exec(`DELETE FROM hearing WHERE id = ?`, id)
+	if err != nil {
+		return
+	}
+	n, err := r.RowsAffected()
+	if err != nil {
+		return
+	}
+	if n != 1 {
+		err = errors.New("hearing got lost in transit")
+	}
+	return
+}
+
+// RemoveLastHearingOf removes the latest hearing of the given song.
+// Fails if the song was never heard or the song does not exist.
+func (db SongDB) RemoveLastHearingOf(song string) (err error) {
+	r, err := db.Exec(`DELETE FROM hearing WHERE id = (
+	                       SELECT hearing.id from hearing
+	                       INNER JOIN song ON hearing.songID = song.id
+	                       WHERE name = ?
+	                       ORDER BY hearing.id DESC
+	                       LIMIT 1
+	                   )`, song)
+	if err != nil {
+		return
+	}
+	n, err := r.RowsAffected()
+	if err != nil {
+		return
+	}
+	if n != 1 {
+		err = errors.New("no hearing for the song was found")
 	}
 	return
 }
