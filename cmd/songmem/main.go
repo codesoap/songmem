@@ -18,6 +18,7 @@ Usage:
     songmem --suggestions <name>
     songmem --remove-hearing [<name>]
     songmem --remove-song [<name>]
+    songmem --rename <name> <newname>
 Options:
     -h --help         Show this screen.
     -r --register     Register that you just heard a song. If the song does not
@@ -35,6 +36,7 @@ Options:
     --remove-song     Remove the last added song from the database. If <name> is
                       given, remove this song. Fails if there are still hearings
                       of the song.
+    --rename          Rename the song <name> to <newname>.
 
 If songmem is called without any arguments, it will list all songs, last heard
 first.
@@ -50,6 +52,8 @@ type conf struct {
 	Suggestions   bool
 	RemoveHearing bool
 	RemoveSong    bool
+	Rename        bool
+	Newname       string
 }
 
 func main() {
@@ -153,11 +157,18 @@ func main() {
 			os.Exit(12)
 		}
 		fmt.Fprintln(os.Stderr, "Removed song:", song)
+	case conf.Rename:
+		err = db.RenameSong(conf.Name, conf.Newname)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, `Error when renaming song:`, err.Error())
+			os.Exit(13)
+		}
+		fmt.Fprintln(os.Stderr, "Renamed song", conf.Name, "to", conf.Newname)
 	default:
 		songs, err := db.ListSongsInOrderOfLastHearing()
 		if err != nil {
 			fmt.Fprintln(os.Stderr, `Error when listing songs:`, err.Error())
-			os.Exit(13)
+			os.Exit(14)
 		}
 		for _, s := range songs {
 			fmt.Println(s)

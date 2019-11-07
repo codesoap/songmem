@@ -21,6 +21,7 @@ Usage:
     songmem --suggestions <name>
     songmem --remove-hearing [<name>]
     songmem --remove-song [<name>]
+    songmem --rename <name> <newname>
 Options:
     -h --help         Show this screen.
     -r --register     Register that you just heard a song. If the song does not
@@ -38,6 +39,7 @@ Options:
     --remove-song     Remove the last added song from the database. If <name> is
                       given, remove this song. Fails if there are still hearings
                       of the song.
+    --rename          Rename the song <name> to <newname>.
 
 If songmem is called without any arguments, it will list all songs, last heard
 first.

@@ -321,3 +321,22 @@ func (db SongDB) RemoveLastAddedSong() (song string, err error) {
 	}
 	return
 }
+
+// RenameSong renames the given song to newName.
+func (db SongDB) RenameSong(song, newName string) (err error) {
+	if len(newName) == 0 {
+		return errors.New("the new name is empty")
+	}
+	r, err := db.Exec(`UPDATE song SET name = ? WHERE name = ?;`, newName, song)
+	if err != nil {
+		return
+	}
+	n, err := r.RowsAffected()
+	if err != nil {
+		return
+	}
+	if n != 1 {
+		err = errors.New("song not found")
+	}
+	return
+}
