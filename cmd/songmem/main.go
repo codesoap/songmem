@@ -6,6 +6,7 @@ import (
 	"github.com/docopt/docopt-go"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 var usage = `
@@ -91,6 +92,7 @@ func main() {
 			os.Exit(5)
 		}
 	case conf.Register:
+		sanityCheckName(conf.Name)
 		err = db.AddHearingAndSongIfNeeded(conf.Name)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, `Error when adding song or hearing:`,
@@ -158,6 +160,7 @@ func main() {
 		}
 		fmt.Fprintln(os.Stderr, "Removed song:", song)
 	case conf.Rename:
+		sanityCheckName(conf.Newname)
 		err = db.RenameSong(conf.Name, conf.Newname)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, `Error when renaming song:`, err.Error())
@@ -182,4 +185,19 @@ func getDBFilename() string {
 		dataDir = filepath.Join(os.Getenv("HOME"), ".local/share/")
 	}
 	return filepath.Join(dataDir, "songmem.sql")
+}
+
+func sanityCheckName(name string) {
+	if len(name) == 0 {
+		fmt.Fprintln(os.Stderr, `Error: The given name is empty.`)
+		os.Exit(2)
+	}
+	if len(name) > 100 {
+		fmt.Fprintln(os.Stderr, `Error: The given name is too long.`)
+		os.Exit(2)
+	}
+	if strings.Contains(name, "\n") {
+		fmt.Fprintln(os.Stderr, `Error: The given name contains a newline character.`)
+		os.Exit(2)
+	}
 }
