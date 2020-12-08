@@ -69,6 +69,8 @@ func main() {
 		fmt.Fprintln(os.Stderr, `Error when using arguments:`, err.Error())
 		os.Exit(2)
 	}
+	conf.Name = strings.TrimSpace(conf.Name)
+	conf.Newname = strings.TrimSpace(conf.Newname)
 
 	db, err := songmem.InitDB(getDBFilename())
 	defer db.Close()
