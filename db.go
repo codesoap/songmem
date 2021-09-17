@@ -18,10 +18,12 @@ type songHearing struct {
 
 func InitDB(filepath string) (SongDB, error) {
 	db, err := sql.Open("sqlite3", filepath)
-	if err == nil && db == nil {
-		err = errors.New("db is nil")
-	} else {
-		_, err = db.Exec(`PRAGMA foreign_keys = ON`)
+	if err == nil {
+		if db == nil {
+			err = errors.New("db is nil")
+		} else {
+			_, err = db.Exec(`PRAGMA foreign_keys = ON`)
+		}
 	}
 	return SongDB{db}, err
 }
