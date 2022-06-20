@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 var usage = `
@@ -14,9 +15,9 @@ Usage:
     songmem --register [--no-add] <name>
     songmem
     songmem --added-at
-    songmem --favourite
-    songmem --frecent
-    songmem --suggestions <name>
+    songmem [--omit=<timespan>] --favourite
+    songmem [--omit=<timespan>] --frecent
+    songmem [--omit=<timespan>] --suggestions <name>
     songmem --remove-hearing [<name>]
     songmem --remove-song [<name>]
     songmem --rename <name> <newname>
@@ -32,6 +33,8 @@ Options:
     -c --frecent      List songs you recently heard a lot. Most frecent first.
     -s --suggestions  List songs, that you often hear before or after hearing
                       the given song. Best suggestions first.
+    -o --omit=<timespan>  Exclude songs that were heard within <timespan> before
+                          now. <timespan> may be something like 30m or 2h.
     --remove-hearing  Remove the latest hearing from the database. If <name> is
                       given, remove the latest hearing of the given song.
     --remove-song     Remove the last added song from the database. If <name> is
@@ -51,6 +54,7 @@ type conf struct {
 	Favourite     bool
 	Frecent       bool
 	Suggestions   bool
+	Omit          string
 	RemoveHearing bool
 	RemoveSong    bool
 	Rename        bool
@@ -111,7 +115,18 @@ func main() {
 			fmt.Println(s)
 		}
 	case conf.Favourite:
-		songs, err := db.ListFavouriteSongs()
+		var songs []string
+		if conf.Omit != "" {
+			omit, err := time.ParseDuration(conf.Omit)
+			if err != nil {
+				errMsg := `Could not parse duration "` + conf.Omit + `":`
+				fmt.Fprintln(os.Stderr, errMsg, err.Error())
+				os.Exit(8)
+			}
+			songs, err = db.ListFavouriteSongsOmitting(omit)
+		} else {
+			songs, err = db.ListFavouriteSongs()
+		}
 		if err != nil {
 			fmt.Fprintln(os.Stderr, `Error when listing songs:`, err.Error())
 			os.Exit(8)
@@ -120,7 +135,18 @@ func main() {
 			fmt.Println(s)
 		}
 	case conf.Frecent:
-		songs, err := db.ListFrecentSongs()
+		var songs []string
+		if conf.Omit != "" {
+			omit, err := time.ParseDuration(conf.Omit)
+			if err != nil {
+				errMsg := `Could not parse duration "` + conf.Omit + `":`
+				fmt.Fprintln(os.Stderr, errMsg, err.Error())
+				os.Exit(9)
+			}
+			songs, err = db.ListFrecentSongsOmitting(omit)
+		} else {
+			songs, err = db.ListFrecentSongs()
+		}
 		if err != nil {
 			fmt.Fprintln(os.Stderr, `Error when listing songs:`, err.Error())
 			os.Exit(9)
@@ -129,7 +155,18 @@ func main() {
 			fmt.Println(s)
 		}
 	case conf.Suggestions:
-		songs, err := db.ListSuggestions(conf.Name)
+		var songs []string
+		if conf.Omit != "" {
+			omit, err := time.ParseDuration(conf.Omit)
+			if err != nil {
+				errMsg := `Could not parse duration "` + conf.Omit + `":`
+				fmt.Fprintln(os.Stderr, errMsg, err.Error())
+				os.Exit(10)
+			}
+			songs, err = db.ListSuggestionsOmitting(conf.Name, omit)
+		} else {
+			songs, err = db.ListSuggestions(conf.Name)
+		}
 		if err != nil {
 			fmt.Fprintln(os.Stderr, `Error when listing songs:`, err.Error())
 			os.Exit(10)

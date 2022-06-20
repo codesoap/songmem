@@ -145,14 +145,30 @@ func (db SongDB) ListSongsInOrderOfLastHearing() (songs []string, err error) {
 // ListFavouriteSongs lists all songs, listing those first, that you
 // heard most often.
 func (db SongDB) ListFavouriteSongs() (songs []string, err error) {
-	rows, err := db.Query(`SELECT name FROM hearing
+	return db.ListFavouriteSongsOmitting(0)
+}
+
+// ListFavouriteSongsOmitting lists songs, listing those first, that
+// you heard most often. Songs that were heard within the omit timespan
+// before now are not listed.
+func (db SongDB) ListFavouriteSongsOmitting(omit time.Duration) (songs []string, err error) {
+	// FIXME: MAX() is not quite right, because of timezones.
+	rows, err := db.Query(`SELECT name, MAX(heardAt) FROM hearing
 	                       INNER JOIN song ON song.id = hearing.songID
 	                       GROUP BY hearing.songID
 	                       ORDER BY COUNT(*) DESC`)
 	if err != nil {
 		return
 	}
-	return extractSongs(rows)
+	shs, err := rowsToSongHearings(rows, "", omit)
+	if err != nil {
+		return
+	}
+	songs = make([]string, len(shs))
+	for i := range shs {
+		songs[i] = shs[i].Name
+	}
+	return
 }
 
 func extractSongs(nameRows *sql.Rows) (songs []string, err error) {
@@ -163,11 +179,18 @@ func extractSongs(nameRows *sql.Rows) (songs []string, err error) {
 		}
 		songs = append(songs, song)
 	}
-	return
+	return songs, nil
 }
 
 // ListFrecentSongs lists songs you lately heard a lot, most frecent first.
 func (db SongDB) ListFrecentSongs() (songs []string, err error) {
+	return db.ListFrecentSongsOmitting(0)
+}
+
+// ListFrecentSongsOmitting lists songs you lately heard a lot, most
+// frecent first. Songs that were heard within the omit timespan before
+// now are not listed.
+func (db SongDB) ListFrecentSongsOmitting(omit time.Duration) (songs []string, err error) {
 	// FIXME: If performance becomes an issue: limit results to last year,
 	//        or so.
 	rows, err := db.Query(`SELECT name, heardAt FROM hearing
@@ -175,7 +198,7 @@ func (db SongDB) ListFrecentSongs() (songs []string, err error) {
 	if err != nil {
 		return
 	}
-	shs, err := rowsToSongHearings(rows)
+	shs, err := rowsToSongHearings(rows, "", omit)
 	if err != nil {
 		return
 	}
@@ -185,19 +208,29 @@ func (db SongDB) ListFrecentSongs() (songs []string, err error) {
 // ListSuggestions lists songs that you aften hear before or after
 // hearing the given song. Best suggestions first.
 func (db SongDB) ListSuggestions(song string) (songs []string, err error) {
+	return db.ListSuggestionsOmitting(song, 0)
+}
+
+// ListSuggestionsOmitting lists songs that you aften hear before or
+// after hearing the given song. Songs that were heard within the omit
+// timespan before now are not listed. Best suggestions first.
+func (db SongDB) ListSuggestionsOmitting(song string, omit time.Duration) (songs []string, err error) {
 	rows, err := db.Query(`SELECT name, heardAt FROM hearing
 	                       INNER JOIN song ON song.id = hearing.songID`)
 	if err != nil {
 		return
 	}
-	shs, err := rowsToSongHearings(rows)
+	shs, err := rowsToSongHearings(rows, song, omit)
 	if err != nil {
 		return
 	}
 	return songHearingsToSuggestions(shs, song)
 }
 
-func rowsToSongHearings(rows *sql.Rows) (shs []songHearing, err error) {
+func rowsToSongHearings(rows *sql.Rows, ref string, omit time.Duration) (shs []songHearing, err error) {
+	deadline := time.Now().Add(-omit)
+	unwantedSongs := make(map[string]bool)
+	unfilteredSHS := make([]songHearing, 0)
 	for rows.Next() {
 		var name string
 		var dateStr string
@@ -208,7 +241,16 @@ func rowsToSongHearings(rows *sql.Rows) (shs []songHearing, err error) {
 		if date, err = time.Parse(time.RFC3339, dateStr); err != nil {
 			return
 		}
-		shs = append(shs, songHearing{name, date})
+		if name != ref && date.After(deadline) {
+			unwantedSongs[name] = true
+		} else {
+			unfilteredSHS = append(unfilteredSHS, songHearing{name, date})
+		}
+	}
+	for _, sh := range unfilteredSHS {
+		if _, unwanted := unwantedSongs[sh.Name]; !unwanted {
+			shs = append(shs, sh)
+		}
 	}
 	return
 }
